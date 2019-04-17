@@ -58,3 +58,9 @@ jobs:
               docker tag app kanopi/ci:latest
               docker push kanopi/ci:latest
             fi
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
