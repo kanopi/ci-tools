@@ -8,7 +8,6 @@ jobs:
   build:
     <<: *defaults
     steps:
-
       - checkout
       - setup_remote_docker:
           version: 18.09.3
@@ -22,8 +21,6 @@ jobs:
           command: |
             set +o pipefail
             docker load -i /caches/app.tar | true
-
-
       - run:
           name: Build application Docker image
           command: |
@@ -41,7 +38,7 @@ jobs:
   test:
     working_directory: /app
     docker:
-      - image: circleci/buildpack-deps:stretch-dind
+      - image: debian:9-slim
     steps:
       - checkout
       - setup_remote_docker:
@@ -64,7 +61,6 @@ jobs:
   build_master:
     <<: *defaults
     steps:
-
       - checkout
       - setup_remote_docker:
           version: 18.09.3
@@ -78,11 +74,10 @@ jobs:
           command: |
             set +o pipefail
             docker load -i /caches/app.tar | true
-
       - deploy:
           name: Push Docker image
           command: |
-            set +e
+            set -e
 
             docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}
             docker tag app kanopi/ci:edge
@@ -91,7 +86,6 @@ jobs:
   build_tag:
     <<: *defaults
     steps:
-
       - checkout
       - setup_remote_docker:
           version: 18.09.3
@@ -105,13 +99,10 @@ jobs:
           command: |
             set +o pipefail
             docker load -i /caches/app.tar | true
-
-
       - deploy:
           name: Push Docker image
           command: |
-            set +e
-
+            set -e
             docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}
             docker tag app kanopi/ci:${CIRCLE_TAG}
             docker push kanopi/ci:${CIRCLE_TAG}
