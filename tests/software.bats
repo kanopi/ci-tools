@@ -1,11 +1,14 @@
 #!/usr/bin/env bats
 
-@test "addition using bc" {
-  result="$(echo 2+2 | bc)"
-  [ "$result" -eq 4 ]
-}
+# Following Tests are used to confirm software is installed.
 
-@test "addition using dc" {
-  result="$(echo 2 2+p | dc)"
-  [ "$result" -eq 4 ]
+@test "Drush Installed" {
+  [[ $SKIP == 1 ]] && skip
+
+  run docker exec -it qabuild drush --version
+  [[ "$output" =~ "Drush Launcher Version" ]] &&
+    [[ "$output" =~ "Drush Version" ]]
+  unset output
+
+  return 0
 }
