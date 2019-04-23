@@ -39,8 +39,9 @@ jobs:
             - /caches/app.tar
 
   test:
-    <<: *defaults
-    image: bats/bats:latest
+    working_directory: /app
+    docker:
+        - image: bats/bats:latest
     steps:
       - checkout
       - setup_remote_docker:
