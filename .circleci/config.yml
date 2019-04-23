@@ -38,7 +38,7 @@ jobs:
   test:
     working_directory: /app
     docker:
-      - image: debian:9-slim
+      - image: debian:9
     steps:
       - checkout
       - setup_remote_docker:
