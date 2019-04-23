@@ -41,7 +41,7 @@ jobs:
   test:
     working_directory: /app
     docker:
-        - image: bats/bats:latest
+      - image: circleci/buildpack-deps:stretch-dind
     steps:
       - checkout
       - setup_remote_docker:
