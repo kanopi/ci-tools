@@ -2,26 +2,28 @@ defaults: &defaults
   working_directory: /app
   docker:
       - image: docker:18.09.3-git
-  steps:
-    - checkout
-    - setup_remote_docker:
-        version: 18.09.3
-    - restore_cache:
-        keys:
-          - v1-{{ .Branch }}
-        paths:
-          - /caches/app.tar
-    - run:
-        name: Load Docker image layer cache
-        command: |
-          set +o pipefail
-          docker load -i /caches/app.tar | true
+
+default_steps: &default_steps
+  - checkout
+  - setup_remote_docker:
+      version: 18.09.3
+  - restore_cache:
+      keys:
+        - v1-{{ .Branch }}
+      paths:
+        - /caches/app.tar
+  - run:
+      name: Load Docker image layer cache
+      command: |
+        set +o pipefail
+        docker load -i /caches/app.tar | true
 
 version: 2
 jobs:
   build:
     <<: *defaults
     steps:
+      <<: *default_steps
       - run:
           name: Build application Docker image
           command: |
@@ -40,6 +42,7 @@ jobs:
     <<: *defaults
     image: bats/bats:latest
     steps:
+      <<: *default_steps
       - run:
           name: Testing Software Versions
           command: bats /app/tests/software.bats
@@ -47,6 +50,7 @@ jobs:
   build_master:
     <<: *defaults
     steps:
+      <<: *default_steps
       - deploy:
           name: Push Docker image
           command: |
@@ -59,6 +63,7 @@ jobs:
   build_tag:
     <<: *defaults
     steps:
+      <<: *default_steps
       - deploy:
           name: Push Docker image
           command: |
