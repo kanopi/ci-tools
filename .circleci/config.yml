@@ -40,18 +40,23 @@ jobs:
     docker:
       - image: debian:9
     steps:
-      - checkout
-      - setup_remote_docker:
-          version: 18.09.3
       - run:
           name: Install Dependencies
           command: |
+            set -e
+            DOCKERVERSION=18.09.3
             apt-get update \
               && mkdir -p /usr/share/man/man1 \
               && apt-get install -y \
                 git mercurial xvfb apt \
                 locales sudo openssh-client ca-certificates tar gzip parallel \
-                net-tools netcat unzip zip bzip2 gnupg curl wget
+                net-tools netcat unzip zip bzip2 gnupg curl wget \
+              && curl -fsSLO https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKERVERSION}.tgz \
+              && tar xzvf docker-${DOCKERVERSION}.tgz --strip 1 -C /usr/local/bin docker/docker \
+              && rm docker-${DOCKERVERSION}.tgz
+      - checkout
+      - setup_remote_docker:
+          version: 18.09.3
       - restore_cache:
           keys:
             - v1-{{ .Branch }}
