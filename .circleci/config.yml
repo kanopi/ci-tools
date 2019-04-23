@@ -1,23 +1,27 @@
+default_image: &default_image
+  working_directory: /app
+  docker:
+      - image: docker:18.09.3-git
+  steps:
+    - checkout
+    - setup_remote_docker:
+        version: 18.09.3
+    - restore_cache:
+        keys:
+          - v1-{{ .Branch }}
+        paths:
+          - /caches/app.tar
+    - run:
+        name: Load Docker image layer cache
+        command: |
+          set +o pipefail
+          docker load -i /caches/app.tar | true
+
 version: 2
 jobs:
   build:
-    working_directory: /app
-    docker:
-      - image: docker:18.09.3-git
+    <<: *defaults
     steps:
-      - checkout
-      - setup_remote_docker:
-          version: 18.09.3
-      - restore_cache:
-          keys:
-            - v1-{{ .Branch }}
-          paths:
-            - /caches/app.tar
-      - run:
-          name: Load Docker image layer cache
-          command: |
-            set +o pipefail
-            docker load -i /caches/app.tar | true
       - run:
           name: Build application Docker image
           command: |
@@ -31,33 +35,40 @@ jobs:
           key: v1-{{ .Branch }}-{{ epoch }}
           paths:
             - /caches/app.tar
+
+  test:
+    <<: *defaults
+    image: bats/bats:latest
+    steps:
+      - run:
+          name: Testing Software Versions
+          command: bats /app/tests/software.bats
+
+  build_master:
+    <<: *defaults
+    steps:
       - deploy:
           name: Push Docker image
           command: |
             set +e
 
             docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}
-            if [[ "${CIRCLE_BRANCH}" == "master" ]]; then
-              echo "Building Edge for master"
-              docker tag app kanopi/ci:edge
-              docker push kanopi/ci:edge
-            elif [[ -n "${CIRCLE_BRANCH}" ]]; then
-              echo "Building Edge for ${CIRCLE_BRANCH}"
-              BRANCH=$(echo $CIRCLE_BRANCH | sed -e 's/[^A-Za-z0-9]/-/g' | awk '{print tolower($0)}')
-              docker tag app kanopi/ci:edge-${BRANCH}
-              docker push kanopi/ci:edge-${BRANCH}
-            fi
+            docker tag app kanopi/ci:edge
+            docker push kanopi/ci:edge
 
-            if [[ -n "${CIRCLE_TAG}" ]]; then
-              echo "Building Version"
+  build_tag:
+    <<: *defaults
+    steps:
+      - deploy:
+          name: Push Docker image
+          command: |
+            set +e
 
-              docker tag app kanopi/ci:${CIRCLE_TAG}
-              docker push kanopi/ci:${CIRCLE_TAG}
-
-              echo "Building Latest"
-              docker tag app kanopi/ci:latest
-              docker push kanopi/ci:latest
-            fi
+            docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}
+            docker tag app kanopi/ci:${CIRCLE_TAG}
+            docker push kanopi/ci:${CIRCLE_TAG}
+            docker tag app kanopi/ci:latest
+            docker push kanopi/ci:latest
 
 workflows:
   version: 2
@@ -67,5 +78,29 @@ workflows:
           filters:
             tags:
               only: /.*/
+            branches:
+              only: /.*/
+      - test:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              only: /.*/
+      - build_master:
+          requires:
+            - test
+          filters:
+            tags:
+              only: master
+            branches:
+              ignore: /.*/
+      - build_tag:
+          requires:
+            - test
+          filters:
+            tags:
+              ignore: master
             branches:
               only: /.*/
