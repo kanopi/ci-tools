@@ -148,6 +148,6 @@ workflows:
             - test
           filters:
             branches:
-              ignore: master
+              ignore: /.*/
             tags:
               only: /.*/
