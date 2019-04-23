@@ -62,7 +62,13 @@ jobs:
           command: |
             set +o pipefail
             docker load -i /caches/app.tar | true
-
+      - run:
+          name: Install BATS-CORE
+          command: |
+            set -e
+            git clone https://github.com/bats-core/bats-core.git
+            cd bats-core
+            ./install.sh $HOME
       - run:
           name: Testing Software Versions
           command: bats /app/tests/software.bats
