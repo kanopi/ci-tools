@@ -38,7 +38,7 @@ jobs:
           name: Install BATS-CORE
           command: |
             set -e
-            git clone https://github.com/bats-core/bats-core.git
+            git clone https://github.com/bats-core/bats-core.git /tmp/bats-core
             cd /tmp/bats-core
             sudo /tmp/install.sh /usr/local
       - checkout
