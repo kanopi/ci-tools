@@ -39,13 +39,12 @@ jobs:
           command: |
             set -e
             git clone https://github.com/bats-core/bats-core.git
-            cd bats-core
-            ./install.sh /usr/local
+            cd /tmp/bats-core
+            sudo /tmp/install.sh /usr/local
+      - checkout
       - run:
           name: Create Docker Volume
-          command: |
-            # create a dummy container which will hold a volume with config
-            docker create -v /var/www --name project-root alpine:3.4 /bin/true
+          command: docker create -v /var/www --name project-root alpine:3.4 /bin/true
       - run:
           name: Download Drupal Project
           command: |
