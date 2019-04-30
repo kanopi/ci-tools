@@ -74,7 +74,7 @@ jobs:
             docker push ${IMAGE_NAME}:edge
 
   build_tag:
-    <<: *defaults
+    executor: docker-publisher
     steps:
       - attach_workspace:
           at: /tmp/workspace
