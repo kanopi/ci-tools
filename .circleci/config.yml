@@ -75,6 +75,9 @@ jobs:
             cd bats-core
             ./install.sh /usr/local
       - run:
+          name: Download Drupal Project
+          command: git clone --depth=1 https://git.drupalcode.org/project/drupal.git /opt/project
+      - run:
           name: Testing Software Versions
           command: bats /app/tests/software.bats
 
