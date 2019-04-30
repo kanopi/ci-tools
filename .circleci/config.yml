@@ -22,12 +22,12 @@ jobs:
             - v1-{{ .Branch }}-{{ checksum ".dockerbuild" }}
             - v1-{{ .Branch }}
           paths:
-            - /caches/app.tar
+            - /tmp/workspace/app.tar
       - run:
           name: Load Docker image layer cache
           command: |
             set +o pipefail
-            docker load -i /caches/app.tar | true
+            docker load -i /tmp/workspace/app.tar | true
       - run:
           name: Build application Docker image
           command: |
@@ -35,14 +35,14 @@ jobs:
       - run:
           name: Save Docker image layer cache
           command: |
-            mkdir -p /caches
-            docker save -o /caches/app.tar app
+            mkdir -p /tmp/workspace
+            docker save -o /tmp/workspace/app.tar app
       - save_cache:
           key: v1-{{ .Branch }}-{{ checksum '.dockerbuild' }}
           paths:
-            - /caches/app.tar
+            - /tmp/workspace/app.tar
       - persist_to_workspace:
-          root: /caches
+          root: /tmp/workspace
           paths:
             - ./app.tar
 
@@ -50,11 +50,11 @@ jobs:
     executor: docker-publisher
     steps:
       - attach_workspace:
-          at: /caches
+          at: /tmp/workspace
       - setup_remote_docker
       - run:
           name: Load archived Docker image
-          command: docker load -i /caches/app.tar
+          command: docker load -i /tmp/workspace/app.tar
       - run:
           name: Install BATS-CORE
           command: |
@@ -79,11 +79,11 @@ jobs:
     executor: docker-publisher
     steps:
       - attach_workspace:
-          at: /caches
+          at: /tmp/workspace
       - setup_remote_docker
       - run:
           name: Load archived Docker image
-          command: docker load -i /caches/app.tar
+          command: docker load -i /tmp/workspace/app.tar
       - deploy:
           name: Push Docker image
           command: |
@@ -97,11 +97,11 @@ jobs:
     executor: docker-publisher
     steps:
       - attach_workspace:
-          at: /caches
+          at: /tmp/workspace
       - setup_remote_docker
       - run:
           name: Load archived Docker image
-          command: docker load -i /caches/app.tar
+          command: docker load -i /tmp/workspace/app.tar
       - deploy:
           name: Push Docker image
           command: |
