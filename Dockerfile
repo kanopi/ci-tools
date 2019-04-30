@@ -268,7 +268,10 @@ RUN set -e; \
 	. $HOME/.profile; \
 	# Yarn
 	export YARN_PROFILE="$HOME/.profile"; \
-	curl -fsSL https://yarnpkg.com/install.sh | bash -s -- --version ${YARN_VERSION} >/dev/null
+	curl -fsSL https://yarnpkg.com/install.sh | bash -s -- --version ${YARN_VERSION} >/dev/null; \
+	# Add lighthouse
+  mkdir ~/reports; \
+  npm i lighthouse -g
 
 # Ruby (installed as user)
 ENV \
