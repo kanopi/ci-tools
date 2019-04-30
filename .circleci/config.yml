@@ -34,7 +34,7 @@ jobs:
           name: Save Docker image layer cache
           command: |
             mkdir -p /tmp/workspace
-            docker save -o /tmp/workspace/app.tar app
+            docker save -o /tmp/workspace/app.tar ${IMAGE_NAME}
       - save_cache:
           key: docker-{{ .Branch }}-{{ checksum '.dockerbuild' }}
           paths:
