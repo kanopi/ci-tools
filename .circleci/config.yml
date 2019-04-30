@@ -16,7 +16,7 @@ jobs:
       - run:
           name: Generate Checksum
           command: |
-            find -s . -type -f -exec md5sum {} \; | md5sum > .dockerbuild
+            find . -type f -exec md5sum {} \; | md5sum > .dockerbuild
       - restore_cache:
           keys:
             - v1-{{ .Branch }}-{{ checksum ".dockerbuild" }}
