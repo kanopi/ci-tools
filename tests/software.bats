@@ -6,7 +6,7 @@ IMG=app
 # Following Tests are used to confirm software is installed.
 
 setup () {
-  docker run -d --rm -p 80:80 -p 443:443 --volumes-from project-root -e APACHE_DOCUMENTROOT=/var/www --name=$IMAGE_NAME $IMG
+  docker run -d --rm -p 80:80 -p 443:443 --volumes-from=project-root -e APACHE_DOCUMENTROOT=/var/www/project --name=$IMAGE_NAME $IMG
 }
 
 # Debugging

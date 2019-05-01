@@ -13,14 +13,8 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
-      - run:
-          name: Generate Checksum
-          command: |
-            set +o pipefail
-            find . -not \( -path ./.circleci -prune \) -not \( -path ./.git -prune \) -type f -exec md5sum {} \; | md5sum > .dockerbuild
-            cat .dockerbuild
       - restore_cache:
-          key: docker-{{ .Branch }}-{{ checksum ".dockerbuild" }}
+          key: docker-{{ .Branch }}
           paths:
             - /tmp/workspace/app.tar
       - run:
@@ -38,7 +32,7 @@ jobs:
             mkdir -p /tmp/workspace
             docker save -o /tmp/workspace/app.tar ${IMAGE_NAME}
       - save_cache:
-          key: docker-{{ .Branch }}-{{ checksum '.dockerbuild' }}
+          key: docker-{{ .Branch }}
           paths:
             - /tmp/workspace/app.tar
       - persist_to_workspace:
@@ -68,10 +62,7 @@ jobs:
           command: docker run -d -v /var/www --name project-root circleci/buildpack-deps:stretch tail -f /dev/null
       - run:
           name: Download Drupal Project
-          command: |
-            docker exec -i project-root git clone --depth=1 https://git.drupalcode.org/project/drupal.git /tmp/project
-            docker exec -i project-root sudo chown -R circleci:circleci /var/www/
-            docker exec -i project-root mv /tmp/project/{,.[^.]}* /var/www/
+          command: docker exec -i project-root git clone --depth=1 https://git.drupalcode.org/project/drupal.git /var/www/project
       - run:
           name: Testing Software Versions
           command: bats tests/software.bats
