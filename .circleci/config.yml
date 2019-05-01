@@ -63,12 +63,12 @@ jobs:
       - checkout
       - run:
           name: Create Docker Volume
-          command: docker run -v /var/www --name project-root alpine:3.4 /bin/true
+          command: docker run -v /var/www --name project-root alpine:3.4 tail -f /dev/null
       - run:
           name: Download Drupal Project
           command: |
-            git clone --depth=1 https://git.drupalcode.org/project/drupal.git /tmp/project
-            docker cp /tmp/project project-root:/var/www/
+            docker exec -i project-root git clone --depth=1 https://git.drupalcode.org/project/drupal.git /tmp/project
+            docker exec -i project-root mv -R /tmp/project/{,.[^.]}* /var/www/
       - run:
           name: Testing Software Versions
           command: bats tests/software.bats
