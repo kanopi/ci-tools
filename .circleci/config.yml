@@ -63,7 +63,7 @@ jobs:
       - checkout
       - run:
           name: Create Docker Volume
-          command: docker run -d -v /var/www --name project-root alpine:3.4 tail -f /dev/null
+          command: docker run -d -v /var/www --name project-root circleci/buildpack-deps:stretch tail -f /dev/null
       - run:
           name: Download Drupal Project
           command: |
