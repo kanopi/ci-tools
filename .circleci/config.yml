@@ -16,7 +16,9 @@ jobs:
       - run:
           name: Generate Checksum
           command: |
-            find . -not \( -path .circleci -prune \) -not \( -path .git -prune \) -type f -exec md5sum {} \; | md5sum > .dockerbuild
+            set +o pipefail
+            find . -not \( -path ./.circleci -prune \) -not \( -path ./.git -prune \) -type f -exec md5sum {} \; | md5sum > .dockerbuild
+            cat .dockerbuild
       - restore_cache:
           key: docker-{{ .Branch }}-{{ checksum ".dockerbuild" }}
           paths:
