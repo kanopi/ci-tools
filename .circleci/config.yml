@@ -71,7 +71,7 @@ jobs:
             docker cp /tmp/project project-root:/var/www/
       - run:
           name: Testing Software Versions
-          command: bats /app/tests/software.bats
+          command: bats tests/software.bats
 
   build_master:
     executor: docker-publisher
