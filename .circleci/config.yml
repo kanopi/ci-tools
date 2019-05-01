@@ -68,7 +68,7 @@ jobs:
           name: Download Drupal Project
           command: |
             docker exec -i project-root git clone --depth=1 https://git.drupalcode.org/project/drupal.git /tmp/project
-            docker exec -i project-root mv -R /tmp/project/{,.[^.]}* /var/www/
+            docker exec -i project-root mv /tmp/project/{,.[^.]}* /var/www/
       - run:
           name: Testing Software Versions
           command: bats tests/software.bats
