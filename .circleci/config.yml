@@ -62,7 +62,7 @@ jobs:
           command: docker run -d -v /var/www --name project-root circleci/buildpack-deps:stretch tail -f /dev/null
       - run:
           name: Download Drupal Project
-          command: docker exec -i project-root 'sudo chown -R /var/www && git clone --depth=1 https://git.drupalcode.org/project/drupal.git /var/www/project'
+          command: docker exec -i project-root 'sudo chown circleci:circleci /var/www && git clone --depth=1 https://git.drupalcode.org/project/drupal.git /var/www/project'
       - run:
           name: Testing Software Versions
           command: bats tests/software.bats
