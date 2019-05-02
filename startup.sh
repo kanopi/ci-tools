@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # This script is running as root by default.
 # Switching to the docker user can be done via "gosu docker <command>".
