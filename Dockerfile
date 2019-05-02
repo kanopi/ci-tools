@@ -204,8 +204,11 @@ ENV COMPOSER_VERSION=1.8.0 \
 	DRUSH_LAUNCHER_VERSION=0.6.0 \
 	DRUPAL_CONSOLE_LAUNCHER_VERSION=1.8.0 \
 	WPCLI_VERSION=2.0.1 \
-	PLATFORMSH_CLI_VERSION=3.38.1
+	PLATFORMSH_CLI_VERSION=3.38.1 \
+	HUB_VERSION=2.11.2
 RUN set -xe; \
+	# Hub
+	curl -fsSL "https://github.com/github/hub/releases/download/v${HUB_VERSION}/hub-linux-amd64-${HUB_VERSION}.tgz" -o /usr/local/bin/hub; \
 	# Composer
 	curl -fsSL "https://github.com/composer/composer/releases/download/${COMPOSER_VERSION}/composer.phar" -o /usr/local/bin/composer; \
 	# Drush 8 (global fallback)
@@ -219,11 +222,46 @@ RUN set -xe; \
 	# Platform.sh CLI
 	curl -fsSL "https://github.com/platformsh/platformsh-cli/releases/download/v${PLATFORMSH_CLI_VERSION}/platform.phar" -o /usr/local/bin/platform; \
 	# Make all downloaded binaries executable in one shot
-	(cd /usr/local/bin && chmod +x composer drush8 drush drupal wp platform);
+	(cd /usr/local/bin && chmod +x composer drush8 drush drupal wp platform hub);
+
+ENV \
+	APACHE_DOCUMENTROOT=/var/www/docroot
+
+RUN set -xe; \
+	mkdir /etc/apache2/ssl; \
+	openssl req -batch -x509 -newkey rsa:4096 -days 3650 -nodes -sha256 -subj "/"  -keyout /etc/apache2/ssl/server.key -out /etc/apache2/ssl/server.crt
+
+RUN set -x; \
+	cd /etc/apache2/mods-enabled; \
+	ln -s ../mods-available/proxy.load ./proxy.load; \
+	ln -s ../mods-available/proxy_http.load ./proxy_http.load; \
+	ln -s ../mods-available/proxy_connect.load ./proxy_connect.load; \
+	ln -s ../mods-available/ssl.load ./ssl.load; \
+	ln -s ../mods-available/rewrite.load ./rewrite.load; \
+	rm /etc/apache2/sites-enabled/000-default.conf; \
+	rm -rf /var/www/html; \
+	echo ". /etc/environment" | tee -a /etc/apache2/envvars
+
+COPY config/apache/httpd-vhost.conf /etc/apache2/sites-enabled/000-default.conf
+COPY config/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY startup.sh /opt/startup.sh
+
+ENV GOSU_VERSION=1.10 \
+	GOMPLATE_VERSION=3.0.0
+RUN set -xe; \
+	# Install gosu and give access to the docker user primary group to use it.
+	# gosu is used instead of sudo to start the main container process (pid 1) in a docker friendly way.
+	# https://github.com/tianon/gosu
+	curl -fsSL "https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-$(dpkg --print-architecture)" -o /usr/local/bin/gosu; \
+	chown root:"$(id -gn circleci)" /usr/local/bin/gosu; \
+	chmod +sx /usr/local/bin/gosu; \
+	# gomplate (to process configuration templates in startup.sh)
+	curl -fsSL https://github.com/hairyhenderson/gomplate/releases/download/v${GOMPLATE_VERSION}/gomplate_linux-amd64-slim -o /usr/local/bin/gomplate; \
+	chmod +x /usr/local/bin/gomplate
 
 # All further RUN commands will run as the "docker" user
 USER circleci
-SHELL ["/bin/bash", "-c"]
+SHELL ["/bin/bash", "-l",  "-c"]
 
 # PHP tools (installed as user)
 ENV TERMINUS_VERSION=2.0.0
@@ -252,7 +290,7 @@ RUN set -e; \
 	\
 	# Drush modules
 	drush dl registry_rebuild --default-major=7 --destination=$HOME/.drush >/dev/null; \
-	drush cc drush
+	drush cc drush;
 
 # Node.js (installed as user)
 ENV \
@@ -268,7 +306,9 @@ RUN set -e; \
 	. $HOME/.profile; \
 	# Yarn
 	export YARN_PROFILE="$HOME/.profile"; \
-	curl -fsSL https://yarnpkg.com/install.sh | bash -s -- --version ${YARN_VERSION} >/dev/null
+	curl -fsSL https://yarnpkg.com/install.sh | bash -s -- --version ${YARN_VERSION} >/dev/null; \
+		# Install Lighthouse, AXE CLI, and Backstop JS
+	npm install -g lighthouse axe-cli backstopjs@canary grunt gulp
 
 # Ruby (installed as user)
 ENV \
@@ -303,7 +343,7 @@ RUN set -e; \
 	rvm install ruby-${RUBY_VERSION_INSTALL}; \
 	rvm use ruby-${RUBY_VERSION_INSTALL} --default; \
 	\
-	gem install bundler; \
+	gem install bundler compass; \
 	# Have bundler install gems locally (./.bundle) by default
 	echo -e "\n"'export BUNDLE_PATH=.bundle' >> $HOME/.profile; \
 	\
@@ -311,30 +351,8 @@ RUN set -e; \
 	rvm gemset globalcache enable
 
 USER root
+SHELL ["/bin/sh", "-c"]
 
-ENV \
-	APACHE_DOCUMENTROOT=/var/www/docroot
-
-RUN set -xe; \
-	mkdir /etc/apache2/ssl; \
-	openssl req -batch -x509 -newkey rsa:4096 -days 3650 -nodes -sha256 -subj "/"  -keyout /etc/apache2/ssl/server.key -out /etc/apache2/ssl/server.crt
-
-RUN set -x; \
-	cd /etc/apache2/mods-enabled; \
-	ln -s ../mods-available/proxy.load ./proxy.load; \
-	ln -s ../mods-available/proxy_http.load ./proxy_http.load; \
-	ln -s ../mods-available/proxy_connect.load ./proxy_connect.load; \
-	ln -s ../mods-available/ssl.load ./ssl.load; \
-	ln -s ../mods-available/rewrite.load ./rewrite.load; \
-	rm /etc/apache2/sites-enabled/000-default.conf; \
-	rm -rf /var/www/html; \
-	echo ". /etc/environment" | tee -a /etc/apache2/envvars
-
-COPY config/apache/httpd-vhost.conf /etc/apache2/sites-enabled/000-default.conf
-COPY config/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-COPY startup.sh /opt/startup.sh
-
-USER circleci
 WORKDIR /var/www
 
 # Starter script

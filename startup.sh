@@ -137,39 +137,17 @@ chown "${HOST_UID:-3434}:${HOST_GID:-3434}" /var/www
 # Automatically authenticate with Pantheon if Terminus token is present
 [[ "$TERMINUS_TOKEN" != "" ]] && terminus_login
 
-# If crontab file is found within project add contents to user crontab file.
-if [[ -f ${PROJECT_ROOT}/.docksal/services/cli/crontab ]]; then
-	echo-debug "Loading crontab..."
-	cat ${PROJECT_ROOT}/.docksal/services/cli/crontab | crontab -u docker -
-fi
-
 # Apply git settings
 [[ "$GIT_USER_EMAIL" != "" ]] && [[ "$GIT_USER_NAME" != "" ]] && git_settings
 
-# Initialization steps completed. Create a pid file to mark the container as healthy
-echo-debug "Preliminary initialization completed."
-touch /var/run/cli
-
-# Execute a custom startup script if present
-if [[ -x ${PROJECT_ROOT}/.docksal/services/cli/startup.sh ]]; then
-	echo-debug "Running custom startup script..."
-	# TODO: should we source the script instead?
-	su -l docker -c "${PROJECT_ROOT}/.docksal/services/cli/startup.sh"
-	if [[ $? == 0 ]]; then
-		echo-debug "Custom startup script executed successfully."
-	else
-		echo-debug "ERROR: Custom startup script execution failed."
-	fi
-fi
-
-echo "export APACHE_DOCUMENTROOT=${APACHE_DOCUMENTROOT}" | tee -a /etc/environment
+echo "export APACHE_DOCUMENTROOT=${APACHE_DOCUMENTROOT}" | exec gosu root tee -a /etc/environment
 
 # Execute passed CMD arguments
 echo-debug "Passing execution to: $*"
 # Service mode (run as root)
 if [[ "$1" == "supervisord" ]]; then
-	exec sudo -u root supervisord -c /etc/supervisor/supervisord.conf
+	exec gosu root supervisord -c /etc/supervisor/supervisord.conf
 # Command mode (run as docker user)
 else
-	exec "$@"
+	exec gosu circleci "$@"
 fi
