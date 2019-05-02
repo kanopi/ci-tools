@@ -270,8 +270,7 @@ RUN set -e; \
 	export YARN_PROFILE="$HOME/.profile"; \
 	curl -fsSL https://yarnpkg.com/install.sh | bash -s -- --version ${YARN_VERSION} >/dev/null; \
 	# Add lighthouse
-  mkdir ~/reports; \
-  npm i lighthouse -g
+  npm i lighthouse circle-github-bot fs path -g
 
 # Ruby (installed as user)
 ENV \
@@ -331,7 +330,9 @@ RUN set -x; \
 	ln -s ../mods-available/rewrite.load ./rewrite.load; \
 	rm /etc/apache2/sites-enabled/000-default.conf; \
 	rm -rf /var/www/html; \
-	echo ". /etc/environment" | tee -a /etc/apache2/envvars
+	echo ". /etc/environment" | tee -a /etc/apache2/envvars; \
+	mkdir /opt/reports; \
+  chmod 777 /opt/reports
 
 COPY config/apache/httpd-vhost.conf /etc/apache2/sites-enabled/000-default.conf
 COPY config/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
@@ -339,6 +340,10 @@ COPY startup.sh /opt/startup.sh
 
 USER circleci
 WORKDIR /var/www
+
+# Copy CI scripts
+RUN mkdir /home/circleci/ci-scripts
+COPY ci-scripts /home/circleci/ci-scripts
 
 # Starter script
 ENTRYPOINT ["/opt/startup.sh"]
