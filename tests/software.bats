@@ -1,11 +1,5 @@
 #!/usr/bin/env bats
 
-# Docker Image to Build Container
-CONTAINER_NAME=app
-
-# User to run commands as
-CONTAINER_USER=circleci
-
 # Following Tests are used to confirm software is installed.
 
 # Runs at the beginning of every test.
@@ -25,32 +19,32 @@ teardown() {
   echo "================================================================"
 }
 
+# Test if Composer Installed.
 @test "Composer Installed" {
-  [[ $SKIP == 1 ]] && skip
+  [[ $SKIP == 1 ]] && skip "Full Skip Set"
+  [[ $SKIP_TESTS =~ " ${!BATS_TEST_NAME^^} " ]] && skip "${BATS_TEST_NAME^^} set in SKIP_TESTS"
 
   run docker exec -i -u ${CONTAINER_USER} ${CONTAINER_NAME} bash -lc 'composer --version'
   [[ "$status" -eq 0 ]]
-  # TODO: Add in check to make sure coding standards are loaded.
-
-  unset output
 }
 
+# Test if PHPCS and All Appropriate Libraries Installed.
 @test "PHPCS Installed" {
-  [[ $SKIP == 1 ]] && skip
+  [[ $SKIP == 1 ]] && skip "Full Skip Set"
+  [[ $SKIP_TESTS =~ " ${!BATS_TEST_NAME^^} " ]] && skip "${BATS_TEST_NAME^^} set in SKIP_TESTS"
 
   run docker exec -i -u ${CONTAINER_USER} ${CONTAINER_NAME} bash -lc 'phpcs -i'
   [[ "$status" -eq 0 ]]
-  # TODO: Add in check to make sure coding standards are loaded.
-
-  unset output
 }
 
+# Test if Drush Launcher and Drush 8 are installed.
 @test "Drush Installed" {
-  [[ $SKIP == 1 ]] && skip
+  [[ $SKIP == 1 ]] && skip "Full Skip Set"
+  [[ $SKIP_TESTS =~ " ${!BATS_TEST_NAME^^} " ]] && skip "${BATS_TEST_NAME^^} set in SKIP_TESTS"
 
   run docker exec -i -u ${CONTAINER_USER} ${CONTAINER_NAME} bash -lc 'drush --version'
-  [[ "$status" -eq 0 ]] &&
-  [[ "$output" =~ "Drush Launcher Version" ]] &&
+  [[ "$status" -eq 0 ]]
+  [[ "$output" =~ "Drush Launcher Version" ]]
   [[ "$output" =~ "Drush Version" ]]
-  unset output
 }
+
