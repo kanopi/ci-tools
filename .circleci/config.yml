@@ -38,7 +38,7 @@ workflows:
 executors:
   docker-publisher:
     environment:
-      DOCKER_IMAGE_NAME: kanopi/ci
+      DOCKER_DOCKER_IMAGE_NAME: kanopi/ci
       CONTAINER_USER: circleci
       CONTAINER_NAME: app
     docker:
@@ -62,12 +62,12 @@ jobs:
       - run:
           name: Build application Docker image
           command: |
-            docker build -t ${IMAGE_NAME}:latest .
+            docker build -t ${DOCKER_IMAGE_NAME}:latest .
       - run:
           name: Save Docker image layer cache
           command: |
             mkdir -p /tmp/workspace
-            docker save -o /tmp/workspace/app.tar ${IMAGE_NAME}
+            docker save -o /tmp/workspace/app.tar ${DOCKER_IMAGE_NAME}
       - save_cache:
           key: docker-{{ .Branch }}
           paths:
@@ -122,10 +122,10 @@ jobs:
           command: |
             set -e
             echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-            docker tag ${IMAGE_NAME}:latest ${IMAGE_NAME}:edge-${CIRCLE_BRANCH}
-            docker push ${IMAGE_NAME}:edge-${CIRCLE_BRANCH}
-            docker tag ${IMAGE_NAME}:latest ${IMAGE_NAME}:edge-${CIRCLE_BRANCH}-${CIRCLE_BUILD_NUM}
-            docker push ${IMAGE_NAME}:edge-${CIRCLE_BRANCH}-${CIRCLE_BUILD_NUM}
+            docker tag ${DOCKER_IMAGE_NAME}:latest ${DOCKER_IMAGE_NAME}:edge-${CIRCLE_BRANCH}
+            docker push ${DOCKER_IMAGE_NAME}:edge-${CIRCLE_BRANCH}
+            docker tag ${DOCKER_IMAGE_NAME}:latest ${DOCKER_IMAGE_NAME}:edge-${CIRCLE_BRANCH}-${CIRCLE_BUILD_NUM}
+            docker push ${DOCKER_IMAGE_NAME}:edge-${CIRCLE_BRANCH}-${CIRCLE_BUILD_NUM}
 
   publish_tag:
     executor: docker-publisher
@@ -141,6 +141,6 @@ jobs:
           command: |
             set -e
             echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-            docker tag ${IMAGE_NAME}:latest ${IMAGE_NAME}:${CIRCLE_TAG}
-            docker push ${IMAGE_NAME}:${CIRCLE_TAG}
-            docker push ${IMAGE_NAME}:latest
+            docker tag ${DOCKER_IMAGE_NAME}:latest ${DOCKER_IMAGE_NAME}:${CIRCLE_TAG}
+            docker push ${DOCKER_IMAGE_NAME}:${CIRCLE_TAG}
+            docker push ${DOCKER_IMAGE_NAME}:latest
