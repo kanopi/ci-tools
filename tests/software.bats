@@ -4,7 +4,7 @@
 
 # Runs at the beginning of every test.
 setup () {
-  docker run -d --rm -p 80:80 -p 443:443 --volumes-from=project-root -e APACHE_DOCUMENTROOT=/var/www/project --name=${CONTAINER_NAME} ${IMAGE_NAME}
+  docker run -d --rm -p 80:80 -p 443:443 --volumes-from=project-root -e APACHE_DOCUMENTROOT=/var/www/project --name=${CONTAINER_NAME} ${DOCKER_IMAGE_NAME}
 }
 
 # Runs at the end of every test.

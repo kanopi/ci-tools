@@ -39,7 +39,7 @@ executors:
   docker-publisher:
     environment:
       DOCKER_IMAGE_NAME: kanopi/ci
-      CONTAINER_NAME: circleci
+      CONTAINER_USER: circleci
       CONTAINER_NAME: app
     docker:
       - image: circleci/buildpack-deps:stretch
