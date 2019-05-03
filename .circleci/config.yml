@@ -37,12 +37,13 @@ workflows:
 
 executors:
   docker-publisher:
-    environment:
-      DOCKER_DOCKER_IMAGE_NAME: kanopi/ci
-      CONTAINER_USER: circleci
-      CONTAINER_NAME: app
     docker:
       - image: circleci/buildpack-deps:stretch
+        environment:
+          DOCKER_IMAGE_NAME: kanopi/ci
+          CONTAINER_USER: circleci
+          CONTAINER_NAME: app
+          DOCKER_CACHED: /tmp/workspace/app.tar
 
 jobs:
   build:
@@ -58,16 +59,15 @@ jobs:
           name: Load Docker image layer cache
           command: |
             set +o pipefail
-            docker load -i /tmp/workspace/app.tar | true
+            docker load -i ${DOCKER_CACHED} | true
       - run:
           name: Build application Docker image
-          command: |
-            docker build -t ${DOCKER_IMAGE_NAME}:latest .
+          command: docker build -t ${DOCKER_IMAGE_NAME}:latest .
       - run:
           name: Save Docker image layer cache
           command: |
             mkdir -p /tmp/workspace
-            docker save -o /tmp/workspace/app.tar ${DOCKER_IMAGE_NAME}
+            docker save -o ${DOCKER_CACHED} ${DOCKER_IMAGE_NAME}
       - save_cache:
           key: docker-{{ .Branch }}
           paths:
@@ -85,7 +85,7 @@ jobs:
       - setup_remote_docker
       - run:
           name: Load archived Docker image
-          command: docker load -i /tmp/workspace/app.tar
+          command: docker load -i ${DOCKER_CACHED}
       - run:
           name: Install BATS-CORE
           command: |
@@ -116,7 +116,7 @@ jobs:
       - setup_remote_docker
       - run:
           name: Load archived Docker image
-          command: docker load -i /tmp/workspace/app.tar
+          command: docker load -i ${DOCKER_CACHED}
       - deploy:
           name: Push Docker image
           command: |
@@ -135,7 +135,7 @@ jobs:
       - setup_remote_docker
       - run:
           name: Load archived Docker image
-          command: docker load -i /tmp/workspace/app.tar
+          command: docker load -i ${DOCKER_CACHED}
       - deploy:
           name: Push Docker image
           command: |
