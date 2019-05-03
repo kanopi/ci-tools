@@ -14,7 +14,7 @@ setup () {
 
 # Debugging
 teardown() {
-  docker rm -f $IMG
+  docker rm -f $CONTAINER
   echo "Status: $status"
   echo "Output:"
   echo "================================================================"
