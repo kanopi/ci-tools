@@ -9,12 +9,12 @@ CONTAINER_USER=circleci
 # Following Tests are used to confirm software is installed.
 
 setup () {
-  docker run -d --rm -p 80:80 -p 443:443 --volumes-from=project-root -e APACHE_DOCUMENTROOT=/var/www/project --name=$CONTAINER $IMAGE_NAME
+  docker run -d --rm -p 80:80 -p 443:443 --volumes-from=project-root -e APACHE_DOCUMENTROOT=/var/www/project --name=$(CONTAINER) $(IMAGE_NAME)
 }
 
 # Debugging
 teardown() {
-  docker rm -f $CONTAINER
+  docker rm -f $(CONTAINER)
   echo "Status: $status"
   echo "Output:"
   echo "================================================================"
@@ -27,7 +27,7 @@ teardown() {
 @test "Composer Installed" {
   [[ $SKIP == 1 ]] && skip
 
-  run docker exec -it -u $CONTAINER_USER ${IMG} bash -lc 'composer --version'
+  run docker exec -it -u $(CONTAINER_USER) ${CONTAINER} bash -lc 'composer --version'
   [[ "$status" -eq 0 ]]
   # TODO: Add in check to make sure coding standards are loaded.
 
@@ -37,7 +37,7 @@ teardown() {
 @test "PHPCS Installed" {
   [[ $SKIP == 1 ]] && skip
 
-  run docker exec -it -u $CONTAINER_USER ${IMG} bash -lc 'phpcs -i'
+  run docker exec -it -u $(CONTAINER_USER) ${CONTAINER} bash -lc 'phpcs -i'
   [[ "$status" -eq 0 ]]
   # TODO: Add in check to make sure coding standards are loaded.
 
@@ -47,7 +47,7 @@ teardown() {
 @test "Drush Installed" {
   [[ $SKIP == 1 ]] && skip
 
-  run docker exec -it -u $CONTAINER_USER ${IMG} bash -lc 'drush --version'
+  run docker exec -it -u $(CONTAINER_USER) ${CONTAINER} bash -lc 'drush --version'
   [[ "$status" -eq 0 ]] &&
   [[ "$output" =~ "Drush Launcher Version" ]] &&
   [[ "$output" =~ "Drush Version" ]]
