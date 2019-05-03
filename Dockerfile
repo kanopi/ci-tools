@@ -344,7 +344,7 @@ WORKDIR /var/www
 # Copy CI scripts
 RUN mkdir /home/circleci/ci-scripts
 COPY ci-scripts /home/circleci/ci-scripts
-
+ENV BASH_ENV '~/.bashrc'
 # Starter script
 ENTRYPOINT ["/opt/startup.sh"]
 
