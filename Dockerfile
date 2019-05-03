@@ -340,11 +340,12 @@ COPY startup.sh /opt/startup.sh
 
 USER circleci
 WORKDIR /var/www
+CMD ["/bin/sh"]
 
 # Copy CI scripts
 RUN mkdir /home/circleci/ci-scripts
 COPY ci-scripts /home/circleci/ci-scripts
-ENV BASH_ENV '~/.bashrc'
+
 # Starter script
 ENTRYPOINT ["/opt/startup.sh"]
 
