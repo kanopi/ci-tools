@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # This script is running as root by default.
 # Switching to the docker user can be done via "gosu docker <command>".
@@ -15,10 +15,10 @@ echo-debug ()
 
 uid_gid_reset ()
 {
-	if [[ "$HOST_UID" != "$(id -u docker)" ]] || [[ "$HOST_GID" != "$(id -g docker)" ]]; then
-		echo-debug "Updating docker user uid/gid to $HOST_UID/$HOST_GID to match the host user uid/gid..."
-		usermod -u "$HOST_UID" -o docker
-		groupmod -g "$HOST_GID" -o "$(id -gn docker)"
+	if [[ "$HOST_UID" != "$(id -u circleci)" ]] || [[ "$HOST_GID" != "$(id -g circleci)" ]]; then
+		echo-debug "Updating circleci user uid/gid to $HOST_UID/$HOST_GID to match the host user uid/gid..."
+		usermod -u "$HOST_UID" -o circleci
+		groupmod -g "$HOST_GID" -o "$(id -gn circleci)"
 	fi
 }
 
@@ -73,10 +73,10 @@ convert_secrets ()
 acquia_login ()
 {
 	echo-debug "Authenticating with Acquia..."
-	# This has to be done using the docker user via su to load the user environment
-	# Note: Using 'su -l' to initiate a login session and have .profile sourced for the docker user
+	# This has to be done using the circleci user via su to load the user environment
+	# Note: Using 'su -l' to initiate a login session and have .profile sourced for the circleci user
 	local command="drush ac-api-login --email='${ACAPI_EMAIL}' --key='${ACAPI_KEY}' --endpoint='https://cloudapi.acquia.com/v1' && drush ac-site-list"
-	local output=$(su -l docker -c "${command}" 2>&1)
+	local output=$(su -l circleci -c "${command}" 2>&1)
 	if [[ $? != 0 ]]; then
 		echo-debug "ERROR: Acquia authentication failed."
 		echo
@@ -92,7 +92,7 @@ terminus_login ()
 	# This has to be done using the docker user via su to load the user environment
 	# Note: Using 'su -l' to initiate a login session and have .profile sourced for the docker user
 	local command="terminus auth:login --machine-token='${TERMINUS_TOKEN}'"
-	local output=$(su -l docker -c "${command}" 2>&1)
+	local output=$(su -l circleci -c "${command}" 2>&1)
 	if [[ $? != 0 ]]; then
 		echo-debug "ERROR: Pantheon authentication failed."
 		echo
@@ -104,7 +104,7 @@ terminus_login ()
 # Git settings
 git_settings ()
 {
-	# These must be run as the docker user
+	# These must be run as the circleci user
 	echo-debug "Configuring git..."
 	sudo -u circleci git config --global user.email "${GIT_USER_EMAIL}"
 	sudo -u circleci git config --global user.name "${GIT_USER_NAME}"
@@ -131,45 +131,23 @@ chown "${HOST_UID:-3434}:${HOST_GID:-3434}" -R "$HOME_DIR"
 chown "${HOST_UID:-3434}:${HOST_GID:-3434}" /var/www
 
 # These have to happen after the home directory permissions are reset,
-# otherwise the docker user may not have write access to /home/docker, where the auth session data is stored.
+# otherwise the circleci user may not have write access to /home/circleci, where the auth session data is stored.
 # Acquia Cloud API config
 [[ "$ACAPI_EMAIL" != "" ]] && [[ "$ACAPI_KEY" != "" ]] && acquia_login
 # Automatically authenticate with Pantheon if Terminus token is present
 [[ "$TERMINUS_TOKEN" != "" ]] && terminus_login
 
-# If crontab file is found within project add contents to user crontab file.
-if [[ -f ${PROJECT_ROOT}/.docksal/services/cli/crontab ]]; then
-	echo-debug "Loading crontab..."
-	cat ${PROJECT_ROOT}/.docksal/services/cli/crontab | crontab -u docker -
-fi
-
 # Apply git settings
 [[ "$GIT_USER_EMAIL" != "" ]] && [[ "$GIT_USER_NAME" != "" ]] && git_settings
 
-# Initialization steps completed. Create a pid file to mark the container as healthy
-echo-debug "Preliminary initialization completed."
-touch /var/run/cli
-
-# Execute a custom startup script if present
-if [[ -x ${PROJECT_ROOT}/.docksal/services/cli/startup.sh ]]; then
-	echo-debug "Running custom startup script..."
-	# TODO: should we source the script instead?
-	su -l docker -c "${PROJECT_ROOT}/.docksal/services/cli/startup.sh"
-	if [[ $? == 0 ]]; then
-		echo-debug "Custom startup script executed successfully."
-	else
-		echo-debug "ERROR: Custom startup script execution failed."
-	fi
-fi
-
-echo "export APACHE_DOCUMENTROOT=${APACHE_DOCUMENTROOT}" | tee -a /etc/environment
+echo "export APACHE_DOCUMENTROOT=${APACHE_DOCUMENTROOT}" | exec gosu root tee -a /etc/environment
 
 # Execute passed CMD arguments
 echo-debug "Passing execution to: $*"
 # Service mode (run as root)
 if [[ "$1" == "supervisord" ]]; then
-	exec sudo -u root supervisord -c /etc/supervisor/supervisord.conf
-# Command mode (run as docker user)
+	exec gosu root supervisord -c /etc/supervisor/supervisord.conf
+# Command mode (run as circleci user)
 else
-	exec "$@"
+	exec gosu circleci "$@"
 fi
