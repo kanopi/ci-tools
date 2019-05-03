@@ -1,9 +1,46 @@
 version: 2.1
 
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build:
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              only: /.*/
+      - test:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              only: /.*/
+      - publish_branch:
+          requires:
+            - test
+          filters:
+            branches:
+              only: /.*/
+            tags:
+              ignore: /.*/
+      - publish_tag:
+          requires:
+            - test
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /.*/
+
 executors:
   docker-publisher:
     environment:
-      IMAGE_NAME: kanopi/ci-tools
+      DOCKER_IMAGE_NAME: kanopi/ci
+      CONTAINER_NAME: circleci
+      CONTAINER_NAME: app
     docker:
       - image: circleci/buildpack-deps:stretch
 
@@ -66,28 +103,12 @@ jobs:
             git clone --depth=1 https://git.drupalcode.org/project/drupal.git project
             docker cp project project-root:/var/www
       - run:
-          name: Testing Software Versions
-          command: bats tests/software.bats
-
-  build_master:
-    executor: docker-publisher
-    steps:
-      - attach_workspace:
-          at: /tmp/workspace
-      - setup_remote_docker
-      - run:
-          name: Load archived Docker image
-          command: docker load -i /tmp/workspace/app.tar
-      - deploy:
-          name: Push Docker image
+          name: Run Tests
           command: |
             set -e
+            bats -r tests
 
-            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-            docker tag app ${IMAGE_NAME}:edge
-            docker push ${IMAGE_NAME}:edge
-
-  build_tag:
+  publish_branch:
     executor: docker-publisher
     steps:
       - attach_workspace:
@@ -101,42 +122,25 @@ jobs:
           command: |
             set -e
             echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-            docker tag app ${IMAGE_NAME}:${CIRCLE_TAG}
+            docker tag ${IMAGE_NAME}:latest ${IMAGE_NAME}:edge-${CIRCLE_BRANCH}
+            docker push ${IMAGE_NAME}:edge-${CIRCLE_BRANCH}
+            docker tag ${IMAGE_NAME}:latest ${IMAGE_NAME}:edge-${CIRCLE_BRANCH}-${CIRCLE_BUILD_NUM}
+            docker push ${IMAGE_NAME}:edge-${CIRCLE_BRANCH}-${CIRCLE_BUILD_NUM}
+
+  publish_tag:
+    executor: docker-publisher
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - setup_remote_docker
+      - run:
+          name: Load archived Docker image
+          command: docker load -i /tmp/workspace/app.tar
+      - deploy:
+          name: Push Docker image
+          command: |
+            set -e
+            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+            docker tag ${IMAGE_NAME}:latest ${IMAGE_NAME}:${CIRCLE_TAG}
             docker push ${IMAGE_NAME}:${CIRCLE_TAG}
-            docker tag app ${IMAGE_NAME}:latest
             docker push ${IMAGE_NAME}:latest
-
-workflows:
-  version: 2
-  build_and_test:
-    jobs:
-      - build:
-          filters:
-            tags:
-              only: /.*/
-            branches:
-              only: /.*/
-      - test:
-          requires:
-            - build
-          filters:
-            tags:
-              only: /.*/
-            branches:
-              only: /.*/
-      - build_master:
-          requires:
-            - test
-          filters:
-            branches:
-              only: master
-            tags:
-              ignore: /.*/
-      - build_tag:
-          requires:
-            - test
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /.*/
