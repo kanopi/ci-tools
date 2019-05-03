@@ -261,7 +261,7 @@ RUN set -xe; \
 
 # All further RUN commands will run as the "docker" user
 USER circleci
-SHELL ["/bin/bash", "-c"]
+SHELL ["/bin/bash", "-l", "-c"]
 
 # PHP tools (installed as user)
 ENV TERMINUS_VERSION=2.0.1
