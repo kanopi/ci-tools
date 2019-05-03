@@ -261,10 +261,10 @@ RUN set -xe; \
 
 # All further RUN commands will run as the "docker" user
 USER circleci
-SHELL ["/bin/bash", "-l",  "-c"]
+SHELL ["/bin/bash", "-c"]
 
 # PHP tools (installed as user)
-ENV TERMINUS_VERSION=2.0.0
+ENV TERMINUS_VERSION=2.0.1
 
 # Don't use -x here, as the output may be excessive
 RUN set -e; \
@@ -276,6 +276,7 @@ RUN set -e; \
 	echo -e "\n"'export PATH="$PATH:$HOME/.composer/vendor/bin"' >> $HOME/.profile; \
 	# Reload updated PATH from profile to make composer/drush/etc. visible below
 	. $HOME/.profile; \
+	echo '. $HOME/.profile' >> $HOME/.bashrc; \
 	# Install cgr to use it in-place of `composer global require`
 	composer global require consolidation/cgr >/dev/null; \
 	# Composer parallel install plugin
