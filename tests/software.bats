@@ -42,7 +42,7 @@ teardown() {
   [[ $SKIP == 1 ]] && skip "Full Skip Set"
   [[ $SKIP_TESTS =~ " ${!BATS_TEST_NAME^^} " ]] && skip "${BATS_TEST_NAME^^} set in SKIP_TESTS"
 
-  run docker exec -i -u ${CONTAINER_USER} ${CONTAINER_NAME} bash -lc 'nvm'
+  run docker exec -i -u ${CONTAINER_USER} ${CONTAINER_NAME} bash -c 'nvm'
   [[ "$status" -eq 0 ]]
 }
 
