@@ -310,6 +310,7 @@ RUN set -e; \
 	curl -fsSL https://yarnpkg.com/install.sh | bash -s -- --version ${YARN_VERSION} >/dev/null; \
 		# Install Lighthouse, AXE CLI, and Backstop JS
 	npm install -g lighthouse axe-cli backstopjs@canary grunt gulp
+ENV NVM_DIR="/home/circleci/.nvm"
 
 # Ruby (installed as user)
 ENV \
