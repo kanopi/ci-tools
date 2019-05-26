@@ -245,6 +245,7 @@ RUN set -x; \
 COPY config/apache/httpd-vhost.conf /etc/apache2/sites-enabled/000-default.conf
 COPY config/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY startup.sh /opt/startup.sh
+COPY ci-scripts/analyze_scores.js /home/circleci/analyze_scores.js
 
 ENV GOSU_VERSION=1.10 \
 	GOMPLATE_VERSION=3.0.0
