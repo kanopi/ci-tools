@@ -355,6 +355,14 @@ RUN set -e; \
 USER root
 SHELL ["/bin/sh", "-c"]
 
+RUN set -xe; \
+  mkdir -p /opt/reports; \
+  mkdir -p /opt/ci-scripts; \
+  chmod 777 /opt/reports; \
+  chmod 777 /opt/ci-scripts
+
+COPY ci-scripts /opt/ci-scripts
+
 WORKDIR /var/www
 
 # Starter script
