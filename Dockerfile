@@ -310,7 +310,7 @@ RUN set -e; \
 	export YARN_PROFILE="$HOME/.profile"; \
 	curl -fsSL https://yarnpkg.com/install.sh | bash -s -- --version ${YARN_VERSION} >/dev/null; \
 		# Install Lighthouse, AXE CLI, and Backstop JS
-	npm install -g lighthouse axe-cli backstopjs@canary grunt gulp
+	npm install -g lighthouse circle-github-bot axe-cli backstopjs@canary grunt gulp
 
 # Ruby (installed as user)
 ENV \
@@ -352,16 +352,15 @@ RUN set -e; \
 	rvm cleanup all; \
 	rvm gemset globalcache enable
 
-USER root
-SHELL ["/bin/sh", "-c"]
-
 RUN set -xe; \
-  mkdir -p /opt/reports; \
-  mkdir -p /opt/ci-scripts; \
-  chmod 777 /opt/reports; \
-  chmod 777 /opt/ci-scripts
+  sudo mkdir -p /opt/reports; \
+  mkdir -p ~/ci-scripts; \
+  sudo chmod 777 /opt/reports;
 
-COPY ci-scripts /opt/ci-scripts
+COPY ci-scripts /home/circleci/ci-scripts
+
+RUN sudo chown -R circleci:circleci /home/circleci/ci-scripts
+
 
 WORKDIR /var/www
 
