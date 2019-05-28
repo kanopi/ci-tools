@@ -10,3 +10,7 @@ RUN set -ex; \
   sudo chmod 777 /opt/reports;
 
 COPY ci-scripts /opt/ci-scripts
+
+RUN set -xe; \
+  cd /opt/ci-scripts; \
+  npm install
