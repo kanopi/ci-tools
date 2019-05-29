@@ -5,7 +5,7 @@ const path = require("path");
 const bot = require("circle-github-bot").create();
 
 const pkg = JSON.parse(fs.readFileSync(process.argv[2], "utf8"));
-const requiredScores = pkg.requiredScores;scr
+const requiredScores = pkg.requiredScores;
 
 const reportsDir = process.argv[3];
 
