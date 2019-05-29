@@ -83,8 +83,8 @@ const prComment = [];
   const reportLinks = reports[userType].htmlFilenames.map((filename, idx) => {
     let link = bot.artifactLink(`reports/${filename}`, `run ${idx + 1}`);
     // LMAO -- this bot is making some assumptions about file path
-    // that I can't easily override so w/e
-    return link.replace("/home/circleci/project", "");
+    // that I can't easily override so w/e xcvxcv
+    return link.replace("/root/project", "");
   });
   prComment.push(`<p><strong>Detailed reports</strong>: ${reportLinks.join(", ")}</p>`);
 });
