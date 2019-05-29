@@ -13,4 +13,5 @@ COPY ci-scripts /opt/ci-scripts
 
 RUN set -xe; \
   cd /opt/ci-scripts; \
+  git init; \
   npm install
