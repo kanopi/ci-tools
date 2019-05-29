@@ -50,7 +50,8 @@ const prComment = [];
   );
 
   prComment.push(
-    `<h2>Lighthouse scores (${pkg.url})</h2>`,
+    `<h3>Lighthouse scores</h3>`,
+    `<p><strong>Tested url:</strong> <a href="${pkg.url}" target="_blank">${pkg.url}</a></p>`,
     `<p>Best scores across <strong>${reports[userType].json.length}</strong> parallel runs:</p>`,
     '<p>'
   );
