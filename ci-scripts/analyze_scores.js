@@ -4,17 +4,8 @@ const fs = require("fs");
 const path = require("path");
 const bot = require("circle-github-bot").create();
 
-const pkg = {
-  "lighthouse": {
-    "requiredScores": {
-      "performance": 80,
-      "accessibility": 80,
-      "best-practices": 80,
-      "seo": 80
-    }
-  }
-};
-const requiredScores = pkg.lighthouse.requiredScores;
+const pkg = JSON.parse(fs.readFileSync(process.argv[2], "utf8"));
+const requiredScores = pkg.requiredScores;
 
 const reportsDir = process.argv[3];
 
@@ -59,7 +50,7 @@ const prComment = [];
   );
 
   prComment.push(
-    `<h2>Lighthouse scores (${userType})</h2>`,
+    `<h2>Lighthouse scores (${pkg.url})</h2>`,
     `<p>Best scores across <strong>${reports[userType].json.length}</strong> parallel runs:</p>`,
     '<p>'
   );
@@ -91,9 +82,8 @@ const prComment = [];
 
   const reportLinks = reports[userType].htmlFilenames.map((filename, idx) => {
     let link = bot.artifactLink(`reports/${filename}`, `run ${idx + 1}`);
-    // LMAO -- this bot is making some assumptions about file path
-    // that I can't easily override so w/e
-    return link.replace("/home/circleci/project", "");
+    // Clean reports URLs to match CircleCI artifact path.
+    return link.replace("/root/project/", "");
   });
   prComment.push(`<p><strong>Detailed reports</strong>: ${reportLinks.join(", ")}</p>`);
 });

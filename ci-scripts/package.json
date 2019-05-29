@@ -1,0 +1,8 @@
+{
+  "name": "lighthouse-circleci",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "circle-github-bot": "^2.0.1"
+  }
+}
