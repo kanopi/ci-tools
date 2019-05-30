@@ -16,14 +16,6 @@ const reports = {
   }
 };
 
-// Look for base url
-if (pkg.hasOwnProperty('is_relative_url') && pkg.is_relative_url) {
-  const baseUrl = process.env.LIGHTHOUSE_BASE_URL || false;
-}
-else {
-  const baseUrl = false;
-}
-
 fs.readdirSync(reportsDir).forEach(file => {
   const userType = file.split('-')[0];
 
@@ -57,9 +49,15 @@ const prComment = [];
     "------------------------------------------"
   );
 
+  // Look for base url
+  var baseUrl = false;
+  if (pkg.hasOwnProperty('is_relative_url') && pkg.is_relative_url) {
+    baseUrl = process.env.LIGHTHOUSE_BASE_URL || false;
+  }
+
   var testedUrl = pkg.url;
   if (baseUrl) {
-    var testedUrl = baseUrl + pkg.url;
+    testedUrl = baseUrl + pkg.url;
   }
 
   prComment.push(
