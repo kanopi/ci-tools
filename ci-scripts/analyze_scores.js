@@ -58,7 +58,6 @@ const prComment = [];
   var testedUrl = pkg.url;
   if (baseUrl) {
     testedUrl = baseUrl + pkg.url;
-    testedUrl = testedUrl.replace(/(\/\/)*$/g, '/');
   }
 
   prComment.push(
