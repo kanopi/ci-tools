@@ -16,6 +16,14 @@ const reports = {
   }
 };
 
+// Look for base url
+if (pkg.hasOwnProperty('is_relative_url') && pkg.is_relative_url) {
+  const baseUrl = process.env.LIGHTHOUSE_BASE_URL || false;
+}
+else {
+  const baseUrl = false;
+}
+
 fs.readdirSync(reportsDir).forEach(file => {
   const userType = file.split('-')[0];
 
@@ -49,9 +57,14 @@ const prComment = [];
     "------------------------------------------"
   );
 
+  var testedUrl = pkg.url;
+  if (baseUrl) {
+    var testedUrl = baseUrl + pkg.url;
+  }
+
   prComment.push(
     `<h3>Lighthouse scores</h3>`,
-    `<p><strong>Tested url:</strong> <a href="${pkg.url}" target="_blank">${pkg.url}</a></p>`,
+    `<p><strong>Tested url:</strong> <a href="${testedUrl}" target="_blank">${testedUrl}</a></p>`,
     `<p>Best scores across <strong>${reports[userType].json.length}</strong> parallel runs:</p>`,
     '<p>'
   );
