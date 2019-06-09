@@ -144,6 +144,7 @@ echo "export APACHE_DOCUMENTROOT=${APACHE_DOCUMENTROOT}" | exec gosu root tee -a
 
 # If running on circleci make sure to add the profile to the ${BASH_ENV} file.
 if [[ "${CIRCLECI}" == "true" ]] && [[ "${BASH_ENV}" != "" ]]; then 
+	echo ". /etc/profile.d/secrets.sh" >> ${BASH_ENV}
 	echo ". ${HOME}/.profile" >> ${BASH_ENV}
 fi
 
