@@ -3,7 +3,7 @@ _Summarize what the purpose of the PRs puprpose is. What need does it fulfill. D
 
 ## Checklist
 
-- [ ] Does documenation need to be updated, if so has it?
+- [ ] Does documentation need to be updated, if so has it?
 - [ ] Have all appropriate issues been referenced?
 - [ ] All test been created that are necessary to test this?
 - [ ] Has README been updated?
