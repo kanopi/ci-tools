@@ -355,9 +355,13 @@ USER root
 SHELL ["/bin/sh", "-c"]
 
 WORKDIR /var/www
+RUN chown -R circleci:circleci /var/www
 
 # Starter script
 ENTRYPOINT ["/opt/startup.sh"]
 
 # By default, launch supervisord to keep the container running.
 CMD ["supervisord"]
+
+USER circleci
+SHELL ["/bin/bash", "-cl"]
