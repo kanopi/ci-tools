@@ -308,8 +308,8 @@ RUN set -e; \
 	# Yarn
 	export YARN_PROFILE="$HOME/.profile"; \
 	curl -fsSL https://yarnpkg.com/install.sh | bash -s -- --version ${YARN_VERSION} >/dev/null; \
-		# Install Lighthouse, AXE CLI, and Backstop JS
-	npm install -g lighthouse axe-cli backstopjs@canary grunt gulp
+	# Install Lighthouse, AXE CLI, Backstop JS, Pageres
+	npm install -g lighthouse axe-cli backstopjs@canary grunt gulp pageres
 
 # Ruby (installed as user)
 ENV \
