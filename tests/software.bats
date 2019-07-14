@@ -53,9 +53,8 @@ teardown() {
   [[ $SKIP == 1 ]] && skip "Full Skip Set"
   [[ $SKIP_TESTS =~ " ${!BATS_TEST_NAME^^} " ]] && skip "${BATS_TEST_NAME^^} set in SKIP_TESTS"
 
-  run docker exec -i -u ${CONTAINER_USER} ${CONTAINER_NAME} bash -lc 'lighthouse https://google.com'
+  run docker exec -i -u ${CONTAINER_USER} ${CONTAINER_NAME} bash -lc 'lighthouse https://google.com --port=9222 --chrome-flags="--headless"'
   [[ "$status" -eq 0 ]]
-  [[ "$output" =~ "Drush Launcher Version" ]]
-  [[ "$output" =~ "Drush Version" ]]
+  [[ "$output" =~ "Generating results" ]]
 }
 
