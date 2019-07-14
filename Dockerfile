@@ -259,6 +259,12 @@ RUN set -xe; \
 	curl -fsSL https://github.com/hairyhenderson/gomplate/releases/download/v${GOMPLATE_VERSION}/gomplate_linux-amd64-slim -o /usr/local/bin/gomplate; \
 	chmod +x /usr/local/bin/gomplate
 
+RUN set -ex; \
+  mkdir -p /opt/reports; \
+  mkdir -p /opt/ci-scripts; \
+  chmod 777 /opt/reports; \
+  chmod 777 /opt/ci-scripts;
+
 # All further RUN commands will run as the "docker" user
 USER circleci
 SHELL ["/bin/bash", "-c"]
@@ -296,7 +302,7 @@ RUN set -e; \
 # Node.js (installed as user)
 ENV \
 	NVM_VERSION=0.34.0 \
-	NODE_VERSION=10.15.0 \
+	NODE_VERSION=10 \
 	YARN_VERSION=1.13.0
 # Don't use -x here, as the output may be excessive
 RUN set -e; \
@@ -305,11 +311,22 @@ RUN set -e; \
 	curl -fsSL https://raw.githubusercontent.com/creationix/nvm/v${NVM_VERSION}/install.sh | bash >/dev/null; \
 	# Reload profile to load nvm (needed by Yarn installation below)
 	. $HOME/.profile; \
+	# Set node default
+	nvm install "$NODE_VERSION"; \
+	nvm alias default "$NODE_VERSION"; \
 	# Yarn
 	export YARN_PROFILE="$HOME/.profile"; \
 	curl -fsSL https://yarnpkg.com/install.sh | bash -s -- --version ${YARN_VERSION} >/dev/null; \
 	# Install Lighthouse, AXE CLI, Backstop JS, Pageres
-	npm install -g lighthouse axe-cli backstopjs@canary grunt gulp pageres
+	npm install -g lighthouse axe-cli backstopjs@canary grunt gulp pageres circle-github-bot
+
+COPY ci-scripts /opt/ci-scripts
+
+RUN set -xe; \
+  source $HOME/.profile; \
+  cd /opt/ci-scripts; \
+  git init; \
+  npm install
 
 # Ruby (installed as user)
 ENV \
