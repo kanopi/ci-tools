@@ -1,4 +1,4 @@
-FROM circleci/php:7.2-apache-stretch-browsers
+FROM circleci/php:7.2-apache-stretch-node-browsers
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=1
@@ -311,9 +311,6 @@ RUN set -e; \
 	curl -fsSL https://raw.githubusercontent.com/creationix/nvm/v${NVM_VERSION}/install.sh | bash >/dev/null; \
 	# Reload profile to load nvm (needed by Yarn installation below)
 	. $HOME/.profile; \
-	# Set node default
-	nvm install "$NODE_VERSION"; \
-	nvm alias default "$NODE_VERSION"; \
 	# Yarn
 	export YARN_PROFILE="$HOME/.profile"; \
 	curl -fsSL https://yarnpkg.com/install.sh | bash -s -- --version ${YARN_VERSION} >/dev/null; \
