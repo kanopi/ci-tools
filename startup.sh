@@ -142,6 +142,12 @@ chown "${HOST_UID:-3434}:${HOST_GID:-3434}" /var/www
 
 echo "export APACHE_DOCUMENTROOT=${APACHE_DOCUMENTROOT}" | exec gosu root tee -a /etc/environment
 
+# If running on circleci make sure to add the profile to the ${BASH_ENV} file.
+if [[ "${CIRCLECI}" == "true" ]] && [[ "${BASH_ENV}" != "" ]]; then 
+	echo ". /etc/profile.d/secrets.sh" >> ${BASH_ENV}
+	echo ". ${HOME}/.profile" >> ${BASH_ENV}
+fi
+
 # Execute passed CMD arguments
 echo-debug "Passing execution to: $*"
 # Service mode (run as root)
