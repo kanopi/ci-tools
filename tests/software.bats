@@ -48,8 +48,8 @@ teardown() {
   [[ "$output" =~ "Drush Version" ]]
 }
 
-# Test if Drush Launcher and Drush 8 are installed.
-@test "Lighthouse" {
+# Test if lighthouse can generate a report in to our custom directory.
+@test "Lighthouse Reports" {
   [[ $SKIP == 1 ]] && skip "Full Skip Set"
   [[ $SKIP_TESTS =~ " ${!BATS_TEST_NAME^^} " ]] && skip "${BATS_TEST_NAME^^} set in SKIP_TESTS"
 
