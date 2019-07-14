@@ -53,7 +53,7 @@ teardown() {
   [[ $SKIP == 1 ]] && skip "Full Skip Set"
   [[ $SKIP_TESTS =~ " ${!BATS_TEST_NAME^^} " ]] && skip "${BATS_TEST_NAME^^} set in SKIP_TESTS"
 
-  run docker exec -i -u ${CONTAINER_USER} ${CONTAINER_NAME} bash -lc 'lighthouse https://google.com --port=9222 --chrome-flags="--headless" --output-path=/opt/reports/anonymous-"$(echo -n $CIRCLE_SHELL_ENV | md5sum | awk '{print $1}')" --output=json --output=html'
+  run docker exec -i -u ${CONTAINER_USER} ${CONTAINER_NAME} bash -lc 'lighthouse https://google.com --port=9222 --chrome-flags="--headless" --output-path=/opt/reports/anonymous --output=json --output=html'
   [[ "$status" -eq 0 ]]
   [[ "$output" =~ "Generating results" ]]
 }
